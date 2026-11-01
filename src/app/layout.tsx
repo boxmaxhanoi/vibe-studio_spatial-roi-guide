@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Engine Registry | Production Blueprints & One-Shot Prompts",
-  description: "실전 비즈니스 AI 시스템 스펙과 원클릭 복사 즉시 실행(One-Shot) 프롬프트 저장소",
+  title: "BOXFUL Space OS | 테슬라식 AI 무인 프랜차이즈 & 공간 컨피규레이터",
+  description: "영업사원 없는 100% 데이터 기반 빌딩 공간 분석, 층별 프랜차이즈 큐레이션, 실시간 정찰제 견적 플랫폼",
 };
 
 export default function RootLayout({

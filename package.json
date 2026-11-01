@@ -1,6 +1,7 @@
 {
-  "name": "naeronambul",
+  "name": "boxful-space-os",
   "version": "1.0.0",
+  "description": "BOXFUL Space OS: Tesla-Style Unmanned Franchise & Space Configurator",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
