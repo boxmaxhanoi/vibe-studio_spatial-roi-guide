@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BOXFUL Master AI | 사내 업무 포털 & 총사령관 워룸",
-  description: "(주)박스풀 회사 전용 24/7 AI 총사령관 및 사내 업무 자동화 포털",
+  title: "엄마도 조카도 따라하는 AI 길잡이 | 복붙으로 완성하는 실전 AI 프로젝트",
+  description: "어려운 코딩 몰라도 OK! 프롬프트 복붙 한 번으로 나만의 웹사이트·비서·자동화 도구가 뚝딱 완성되는 실전 AI 가이드 허브",
 };
 
 export default function RootLayout({
