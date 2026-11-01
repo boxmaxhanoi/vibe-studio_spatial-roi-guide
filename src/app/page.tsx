@@ -1,282 +1,310 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
-import { GUIDES, GuideProject } from "@/data/guides";
-import { GuideHeader } from "@/components/GuideHeader";
-import { GuideCard } from "@/components/GuideCard";
-import { GuideDetailModal } from "@/components/GuideDetailModal";
-import { LivePlayground } from "@/components/LivePlayground";
-import { StaffPortal } from "@/components/StaffPortal";
-import { CommanderWarRoom } from "@/components/CommanderWarRoom";
-import {
-  Sparkles,
-  Zap,
-  HelpCircle,
-  ShieldCheck,
-  Building2,
-  BookOpen,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
+import React, { useState } from 'react';
+import { Header } from '../components/Header';
+import { TaleOfTheTape } from '../components/TaleOfTheTape';
+import { AllFightersView } from '../components/AllFightersView';
+import { FlipFlopsTimelineView } from '../components/FlipFlopsTimelineView';
+import { PledgeTrafficLightView } from '../components/PledgeTrafficLightView';
+import { BusinessOwnersManifesto } from '../components/BusinessOwnersManifesto';
+import { POLITICIANS } from '../data/politicians';
+import { MATCHUPS } from '../data/matchups';
+import { 
+  Flame, 
+  Send, 
+  ShieldCheck, 
+  Sparkles, 
+  Swords, 
+  Trophy, 
+  CheckCircle2, 
+  AlertCircle,
+  Megaphone
+} from 'lucide-react';
 
 export default function Home() {
-  // Navigation View: "guides" (엄마·조카 길잡이) | "portal" (박스풀 사내포털) | "warroom" (총사령관 워룸)
-  const [viewMode, setViewMode] = useState<"guides" | "portal" | "warroom">("guides");
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'matchups' | 'all-fighters' | 'flip-flops' | 'pledges' | 'manifesto'>('matchups');
+  const [selectedMatchupId, setSelectedMatchupId] = useState<string>('heavyweight-main');
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
-  // Guide State
-  const [quickMode, setQuickMode] = useState<boolean>(true); // 기본을 "초스피드 복붙 모드"로 친절하게 설정!
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [targetFilter, setTargetFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeGuide, setActiveGuide] = useState<GuideProject | null>(null);
+  // Form State
+  const [reportTarget, setReportTarget] = useState('');
+  const [reportPast, setReportPast] = useState('');
+  const [reportCurrent, setReportCurrent] = useState('');
+  const [reportSource, setReportSource] = useState('');
 
-  // Playground State
-  const [playgroundOpen, setPlaygroundOpen] = useState<boolean>(false);
-  const [playgroundPrompt, setPlaygroundPrompt] = useState<string>("");
-  const [playgroundTitle, setPlaygroundTitle] = useState<string>("");
+  const currentMatchup = MATCHUPS.find((m) => m.id === selectedMatchupId) || MATCHUPS[0];
+  const fighter1 = POLITICIANS[currentMatchup.fighter1Id];
+  const fighter2 = POLITICIANS[currentMatchup.fighter2Id];
 
-  // Filtered Guides
-  const filteredGuides = useMemo(() => {
-    return GUIDES.filter((g) => {
-      // Category filter
-      if (selectedCategory !== "all" && g.category !== selectedCategory) {
-        return false;
-      }
-      // Target Audience filter
-      if (targetFilter !== "all" && g.targetAudience !== targetFilter) {
-        return false;
-      }
-      // Search query filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = g.title.toLowerCase().includes(query);
-        const matchesTagline = g.tagline.toLowerCase().includes(query);
-        const matchesCategory = g.categoryLabel.toLowerCase().includes(query);
-        const matchesPrompt = g.quickPrompt.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesTagline && !matchesCategory && !matchesPrompt) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [selectedCategory, targetFilter, searchQuery]);
-
-  const handleTestInPlayground = (prompt: string, title: string) => {
-    setPlaygroundPrompt(prompt);
-    setPlaygroundTitle(title);
-    setPlaygroundOpen(true);
-    // Smooth scroll down to playground
+  const handleReportSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportSubmitted(true);
     setTimeout(() => {
-      const el = document.getElementById("playground-section");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 100);
+      setReportModalOpen(false);
+      setReportSubmitted(false);
+      setReportTarget('');
+      setReportPast('');
+      setReportCurrent('');
+      setReportSource('');
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/70">
-      {/* Switcher bar: Guides vs Corporate Portal */}
-      <div className="bg-slate-900 text-slate-300 py-2 px-4 text-xs border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="font-semibold text-white">AI Studio Live</span>
-            <span className="text-slate-500 hidden sm:inline">|</span>
-            <span className="text-slate-400 hidden sm:inline">
-              누구나 따라하는 실전 AI 프로젝트 허브
-            </span>
-          </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+      <div>
+        {/* Global Navigation Header */}
+        <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode("guides")}
-              className={`px-3 py-1 rounded-lg font-bold transition-all text-xs ${
-                viewMode === "guides"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              🌟 엄마·조카 AI 길잡이
-            </button>
-            <button
-              onClick={() => setViewMode("portal")}
-              className={`px-3 py-1 rounded-lg font-bold transition-all text-xs ${
-                viewMode === "portal"
-                  ? "bg-amber-500 text-slate-950 font-black shadow-xs"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              🏢 회사 전용 포털
-            </button>
-            <button
-              onClick={() => setViewMode("warroom")}
-              className={`px-3 py-1 rounded-lg font-bold transition-all text-xs ${
-                viewMode === "warroom"
-                  ? "bg-rose-600 text-white shadow-xs"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              🔒 총사령관 워룸
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* Hero Banner */}
+        <section className="bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border-b border-slate-800 py-10 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-transparent to-transparent pointer-events-none" />
+          
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="inline-flex items-center gap-2 bg-red-950/60 border border-red-800 text-red-400 text-xs font-black px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-4">
+              <Flame className="w-4 h-4 text-red-500 animate-pulse" />
+              시민 참여형 정치인 팩트 배틀 & 내로남불 검증 아카이브
+            </div>
 
-      {/* Main View Router */}
-      {viewMode === "guides" ? (
-        <>
-          {/* Header */}
-          <GuideHeader
-            quickMode={quickMode}
-            onToggleQuickMode={setQuickMode}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            targetFilter={targetFilter}
-            onTargetFilterChange={setTargetFilter}
-          />
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4 leading-tight">
+              말 따로, 행동 따로? <br className="hidden sm:inline" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-amber-400 to-blue-500">
+                체급별 적수 맞짱 & 팩트 스탯
+              </span>
+              으로 판정한다!
+            </h1>
 
-          {/* Quick Notice Banner */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-50 via-rose-50 to-indigo-50 border border-amber-200/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md text-2xl">
-                  💡
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <span>어떻게 쓰면 되나요? (초간단 2단계)</span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
-                      초보자 환영
-                    </span>
-                  </h3>
-                  <p className="text-xs text-slate-600 mt-1">
-                    1️⃣ 원하는 프로젝트 카드의 <strong>[원클릭 프롬프트 복사]</strong> 버튼을 누릅니다. ➔ 2️⃣ <strong>ChatGPT</strong>나 <strong>Claude</strong>에 붙여넣기(Ctrl+V)만 하면 끝!
-                  </p>
-                </div>
-              </div>
+            <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+              학력, 재산, 공식 전과 기록부터 공약 이행률과 언행 불일치(내로남불) 지수까지!
+              진영 논리를 벗어나 오직 <strong>공식 선관위 공보와 국회 의사록 팩트</strong>로 유권자의 눈을 밝힙니다.
+            </p>
+
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={() => setActiveTab('matchups')}
+                className="bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-black text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-red-600/30 flex items-center gap-2 transition-all hover:scale-105"
+              >
+                <Swords className="w-4 h-4" />
+                <span>체급별 라이벌전 직관</span>
+              </button>
 
               <button
-                onClick={() => setPlaygroundOpen(!playgroundOpen)}
-                className="shrink-0 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-xs"
+                onClick={() => setActiveTab('manifesto')}
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-black text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-orange-600/30 flex items-center gap-2 transition-all hover:scale-105"
               >
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>{playgroundOpen ? "실시간 놀이터 닫기" : "웹에서 바로 써보기 (Live)"}</span>
+                <Megaphone className="w-4 h-4" />
+                <span>자영업자·대표자 총궐기 선언</span>
+              </button>
+
+              <button
+                onClick={() => setReportModalOpen(true)}
+                className="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all"
+              >
+                <Send className="w-4 h-4 text-amber-400" />
+                <span>새로운 내로남불 제보</span>
               </button>
             </div>
           </div>
+        </section>
 
-          {/* Optional Live Playground Section */}
-          {playgroundOpen && (
-            <div id="playground-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-              <LivePlayground
-                initialPrompt={playgroundPrompt}
-                initialTitle={playgroundTitle}
-                onClose={() => setPlaygroundOpen(false)}
+        {/* Main Content Area */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {activeTab === 'matchups' && (
+            <div>
+              {/* Matchup Selection Cards */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    LIVE 파이트 나이트 매치업 선택
+                  </h3>
+                  <span className="text-xs text-slate-500">총 3개 체급 빅매치 편성</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {MATCHUPS.map((m) => {
+                    const isSelected = m.id === selectedMatchupId;
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedMatchupId(m.id)}
+                        className={`text-left p-4 rounded-xl border transition-all ${
+                          isSelected
+                            ? 'bg-slate-900 border-amber-500 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500'
+                            : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-1">
+                          {m.division}
+                        </span>
+                        <div className="text-base font-black text-white mb-1 flex items-center justify-between">
+                          <span>{m.title}</span>
+                          {isSelected && <span className="text-xs text-amber-400">🔥 선택됨</span>}
+                        </div>
+                        <p className="text-[11px] text-slate-400 truncate">
+                          {m.keyIssue}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* The Tale of the Tape Showcase */}
+              <TaleOfTheTape
+                matchup={currentMatchup}
+                fighter1={fighter1}
+                fighter2={fighter2}
               />
+
+              {/* 📢 메인 디스플레이 아래쪽: 자영업자 / 법인 대표자 / 관리자 총궐기 연대 선언문 */}
+              <BusinessOwnersManifesto />
             </div>
           )}
 
-          {/* Card Grid */}
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-black text-slate-900">
-                  실전 프로젝트 가이드 목록
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-bold">
-                  총 {filteredGuides.length}개
-                </span>
-              </div>
-              <span className="text-xs text-slate-400">
-                {quickMode ? "⚡ 초스피드 복붙 모드 활성화됨" : "📖 친절 설명 모드 활성화됨"}
-              </span>
-            </div>
+          {activeTab === 'all-fighters' && (
+            <AllFightersView politicians={POLITICIANS} />
+          )}
 
-            {filteredGuides.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8">
-                <p className="text-4xl">🔍</p>
-                <h3 className="text-base font-bold text-slate-800 mt-3">
-                  검색 결과가 없습니다.
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  다른 검색어를 입력하시거나 카테고리를 전체로 변경해보세요.
+          {activeTab === 'flip-flops' && (
+            <FlipFlopsTimelineView politicians={POLITICIANS} />
+          )}
+
+          {activeTab === 'pledges' && (
+            <PledgeTrafficLightView politicians={POLITICIANS} />
+          )}
+
+          {activeTab === 'manifesto' && (
+            <BusinessOwnersManifesto />
+          )}
+        </main>
+      </div>
+
+      {/* Citizen Report Modal */}
+      {reportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setReportModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase mb-1">
+              <Sparkles className="w-4 h-4" />
+              시민 크라우드소싱 팩트체크
+            </div>
+            <h3 className="text-xl font-black text-white mb-2">
+              정치인 내로남불 사례 제보하기
+            </h3>
+            <p className="text-xs text-slate-400 mb-6">
+              정치인의 과거 발언과 현재 정반대의 행보, 또는 파기된 공약을 제보해 주시면
+              팩트 검증팀이 공식 회의록 및 기사를 확인 후 업데이트합니다.
+            </p>
+
+            {reportSubmitted ? (
+              <div className="bg-emerald-950/60 border border-emerald-800 p-6 rounded-xl text-center space-y-2">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                <h4 className="text-base font-bold text-white">제보가 정상 접수되었습니다!</h4>
+                <p className="text-xs text-slate-300">
+                  투명하고 깨끗한 정치를 위한 시민 여러분의 참여에 감사드립니다.
                 </p>
-                <button
-                  onClick={() => {
-                    setSelectedCategory("all");
-                    setTargetFilter("all");
-                    setSearchQuery("");
-                  }}
-                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold"
-                >
-                  필터 초기화
-                </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredGuides.map((guide) => (
-                  <GuideCard
-                    key={guide.id}
-                    guide={guide}
-                    quickMode={quickMode}
-                    onOpenDetail={setActiveGuide}
-                    onTestInPlayground={handleTestInPlayground}
+              <form onSubmit={handleReportSubmit} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">
+                    정치인 이름 및 소속 정당 *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="예: 홍길동 (국민의힘 또는 더불어민주당)"
+                    value={reportTarget}
+                    onChange={(e) => setReportTarget(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500"
                   />
-                ))}
-              </div>
-            )}
-          </main>
+                </div>
 
-          {/* Detail Modal */}
-          <GuideDetailModal
-            guide={activeGuide}
-            onClose={() => setActiveGuide(null)}
-            onTestInPlayground={handleTestInPlayground}
-          />
-        </>
-      ) : viewMode === "portal" ? (
-        <div className="flex-1">
-          <StaffPortal />
-        </div>
-      ) : (
-        <div className="flex-1">
-          <CommanderWarRoom
-            isUnlocked={isUnlocked}
-            onUnlock={() => setIsUnlocked(true)}
-          />
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">
+                    과거 발언 및 입장 (언제, 무슨 말을 했는가?) *
+                  </label>
+                  <textarea
+                    required
+                    rows={2}
+                    placeholder="예: 2021년 당시 '국회의원 불체포특권은 즉각 폐지해야 마땅하다'고 공언함"
+                    value={reportPast}
+                    onChange={(e) => setReportPast(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">
+                    현재 행보 및 말바꾸기 (현재 어떻게 입장을 뒤집었는가?) *
+                  </label>
+                  <textarea
+                    required
+                    rows={2}
+                    placeholder="예: 2023년 본인 체포동의안 표결에서는 부결을 당론으로 호소함"
+                    value={reportCurrent}
+                    onChange={(e) => setReportCurrent(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">
+                    증거 출처 링크 (언론 보도 URL, 국회 회의록, 유튜브 영상 타임스탬프) *
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://..."
+                    value={reportSource}
+                    onChange={(e) => setReportSource(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-black py-2.5 rounded-xl shadow-lg transition-all"
+                  >
+                    제보 제출하기 (팩트체크 검토 요청)
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Global Footer */}
-      <footer className="mt-auto border-t border-slate-200/80 bg-white py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🤖✨</span>
-            <div>
-              <p className="font-bold text-slate-800">
-                엄마도 조카도 따라하는 AI 길잡이 프로젝트
-              </p>
-              <p className="text-[11px] text-slate-400">
-                AI 바이브 코딩으로 실전 개발된 모든 프로젝트를 누구나 쉽게 따라 할 수 있도록 정리합니다.
-              </p>
+      {/* Global Transparency Footer */}
+      <footer className="bg-slate-950 border-t border-slate-900 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-slate-300 font-black text-sm">
+              <span>내로남불 (NAERONAMBUL) 아카이브</span>
+              <span className="text-red-500 font-bold text-xs uppercase px-1.5 py-0.5 rounded bg-red-950/80 border border-red-800/60">
+                Non-Partisan
+              </span>
             </div>
+            <p className="text-slate-500">
+              본 플랫폼은 특정 정당이나 정치인을 지지하거나 비방하지 않으며,
+              헌법 제1조 2항의 유권자 주권 실현과 대한민국 자영업자·기업인의 정당한 권익을 위해 운영됩니다.
+            </p>
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span>Next.js 14 · Tailwind CSS · Vercel Hosted</span>
-            <span>•</span>
-            <button
-              onClick={() => {
-                setViewMode("guides");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="text-indigo-600 font-bold hover:underline"
-            >
-              맨 위로 가기 ↑
-            </button>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-[11px] text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>데이터 출처: 중앙선거관리위원회 • 대한민국 국회 • 한국매니페스토실천본부</span>
+            </div>
           </div>
         </div>
       </footer>
