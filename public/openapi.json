@@ -1,0 +1,88 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BOXFUL Self-Storage Agentic API",
+    "description": "박스풀 무인 공유창고 AI 플러그인: 지점 검색, 짐 사진 부피 견적, 3D 라커 선택 및 즉시 결제",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://boxful.kr/api"
+    }
+  ],
+  "paths": {
+    "/stores/nearby": {
+      "get": {
+        "operationId": "searchNearbyStores",
+        "summary": "고객 위치 기준 가장 가까운 박스풀 지점 조회",
+        "parameters": [
+          {
+            "name": "location",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "지역명 또는 지하철역 (예: 강남역, 역삼동, 가양역)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "지점 목록 및 실시간 잔여 라커 현황"
+          }
+        }
+      }
+    },
+    "/ai/estimate-luggage": {
+      "post": {
+        "operationId": "estimateLuggageFromImage",
+        "summary": "짐 사진을 분석하여 적정 라커 사이즈(XS/S/M/L) 및 여유공간 산출",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageUrl": { "type": "string", "description": "고객 짐 사진 URL 또는 Base64" },
+                  "itemList": { "type": "array", "items": { "type": "string" }, "description": "물품 텍스트 목록 (옵션)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "추천 라커 크기 및 CBM 부피 계산 결과"
+          }
+        }
+      }
+    },
+    "/checkout/instant": {
+      "post": {
+        "operationId": "createInstantCheckout",
+        "summary": "원클릭 예약 생성 및 1초 결제 링크/모바일 도어락 키 발급",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "storeId": { "type": "string" },
+                  "lockerId": { "type": "string" },
+                  "durationDays": { "type": "integer", "description": "보관 일수 (예: 1, 7, 15, 30, 90)" },
+                  "userPhone": { "type": "string" }
+                },
+                "required": ["storeId", "lockerId", "durationDays"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "결제 URL 및 예약 확인 정보"
+          }
+        }
+      }
+    }
+  }
+}
