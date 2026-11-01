@@ -4,9 +4,9 @@
   "description": "박스풀 AI 비전 짐 측정·슬라이딩 요금·짐 자산화 스마트 공유창고 플랫폼",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3600",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3600",
     "lint": "next lint"
   },
   "dependencies": {
